@@ -84,7 +84,7 @@ open class ResourcePool<ItemType: Hashable> {
         condition.unlock()
     }
     
-    open func using<ResultType>(handler: (ItemType) throws -> ResultType) throws -> ResultType {
+    open func using<ResultType>(handler: (ItemType) throws -> ResultType) rethrows -> ResultType {
         let item = acquire()
         defer {
             release(item)
