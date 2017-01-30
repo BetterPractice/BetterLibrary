@@ -65,6 +65,10 @@ open class AsyncTask<ResultType> {
         }
     }
     
+    public init() {
+        
+    }
+    
     open func setResult(_ result: MethodResult<ResultType>) {
         syncQueue.sync {
             performCallback(result)

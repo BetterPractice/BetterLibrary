@@ -28,11 +28,6 @@ open class TaskJoiner<IdentifierType: Hashable, ItemType>: AsyncTask<[Identifier
     private var pendingTasks: Set<IdentifierType> = []
     public private(set) var taskResults: [IdentifierType: MethodResult<ItemType>] = [:]
     
-    private var callbackQueue: OperationQueue?
-    private var callback: (() -> Void)?
-    
-    private let condition: NSCondition = NSCondition()
-    
     open var hasPendingTasks: Bool {
         return syncQueue.sync {
             return pendingTasks.count > 0
