@@ -38,7 +38,7 @@ public class TaskJoinerTests: XCTestCase {
                 joiner.markCompletion(identifier: i, result: MethodResult(i))
             }
             do {
-                let table = try joiner.wait().value()
+                let table = try joiner.wait()
                 XCTAssert(table.count==iterations, "Wrong number of rows in result table.")
             }
             catch {
@@ -50,8 +50,7 @@ public class TaskJoinerTests: XCTestCase {
     func testAsyncWait() {
         
         self.measure {
-            let joiner: TaskJoiner<Int, Int> = TaskJoiner()
-            let iterations = 100000
+             let iterations = 100000
             
             for i in 0..<iterations {
                 joiner.markStart(identifier: i)
@@ -81,7 +80,7 @@ public class TaskJoinerTests: XCTestCase {
             }
             
             do {
-                let table = try joiner.wait().value()
+                let table = try joiner.wait()
                 XCTAssert(table.count==iterations, "Wrong number of rows in result table.")
             }
             catch {

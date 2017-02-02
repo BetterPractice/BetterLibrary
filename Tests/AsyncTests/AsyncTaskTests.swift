@@ -54,35 +54,41 @@ public class AsyncTaskTests: XCTestCase {
     }
     
     func testSyncWaitUncompleted() {
+        let targetValue = 1
         let task: AsyncTask<Int> = AsyncTask()
+        
+        
         
         DispatchQueue.concurrentPerform(iterations: 1) {_ in
             sleep(1)
-            task.setResult(1)
+            task.setResult(targetValue)
         }
         
-        let result = task.wait()
-        XCTAssert(result.isSuccessful, "Task is not successful")
+        let result = try! task.wait()
+        XCTAssert(result == targetValue, "Task is not successful")
     }
     
     func testSyncWaitCompleted() {
-        let task: AsyncTask<Void> = AsyncTask()
-        task.setResult(.success())
+        let targetValue = 1
+        let task: AsyncTask<Int> = AsyncTask()
+        task.setResult(targetValue)
         
-        let result = task.wait()
-        XCTAssert(result.isSuccessful, "Task is not successful")
+        let result = try! task.wait()
+        XCTAssert(result == targetValue, "Task is not successful")
     }
     
     func testAsyncWaitUncomplete() {
         let expectation = self.expectation(description: "Async wait triggered.")
         
-        let task: AsyncTask<Void> = AsyncTask()
+        let targetValue = 1
+        let task: AsyncTask<Int> = AsyncTask()
         task.asyncWait { (result) in
-            XCTAssert(result.isSuccessful, "Task is not successful")
+            let value = try! result.value()
+            XCTAssert(value==targetValue, "Task is not successful")
             expectation.fulfill()
         }
         
-        task.setResult(.success())
+        task.setResult(targetValue)
         
         waitForExpectations(timeout: 5.0) { (error) in
             if let error = error {
@@ -95,12 +101,12 @@ public class AsyncTaskTests: XCTestCase {
         
         let expectation = self.expectation(description: "Async wait triggered.")
         
-        let task: AsyncTask<Void> = AsyncTask()
-        
-        task.setResult(.success())
-        
+        let targetValue = 1
+        let task: AsyncTask<Int> = AsyncTask()
+        task.setResult(targetValue)
         task.asyncWait { (result) in
-            XCTAssert(result.isSuccessful, "Task is not successful")
+            let value = try! result.value()
+            XCTAssert(value==targetValue, "Task is not successful")
             expectation.fulfill()
         }
         
