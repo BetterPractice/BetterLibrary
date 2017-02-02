@@ -50,7 +50,8 @@ public class TaskJoinerTests: XCTestCase {
     func testAsyncWait() {
         
         self.measure {
-             let iterations = 100000
+            let joiner: TaskJoiner<Int, Int> = TaskJoiner()
+            let iterations = 100000
             
             for i in 0..<iterations {
                 joiner.markStart(identifier: i)
