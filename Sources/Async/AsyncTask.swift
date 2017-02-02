@@ -82,7 +82,7 @@ open class AsyncTask<ResultType> {
         setResult(.error(error))
     }
     
-    open func wait() -> MethodResult<ResultType> {
+    open func wait() throws -> ResultType {
         func checkResult() -> MethodResult<ResultType>? {
             return syncQueue.sync {
                 return _result
@@ -91,7 +91,7 @@ open class AsyncTask<ResultType> {
         
         while true {
             if let result = _result {
-                return result
+                return try result.value()
             }
             condition.lock()
             condition.wait()
