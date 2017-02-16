@@ -18,6 +18,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import Foundation
 
 public enum ModelError : Error {
     case NullObject
@@ -95,6 +96,8 @@ public struct Model: Equatable {
             return innerCompare(type: Double.self, l: lvalue, r: rvalue)
         case is String.Type:
             return innerCompare(type: String.self, l: lvalue, r: rvalue)
+        case is Data.Type:
+            return innerCompare(type: Data.self, l: lvalue, r: rvalue)
         case is [Model].Type:
             let larray = lvalue as! [Model]
             let rarray = rvalue as! [Model]
