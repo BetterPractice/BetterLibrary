@@ -135,6 +135,14 @@ public struct Model: Equatable {
         }
     }
     
+    public func impliedUnwrap<ExpectedType>() throws -> ExpectedType {
+        if let value = value as? ExpectedType {
+            return value
+        } else {
+            throw ModelError.WrongType
+        }
+    }
+    
     static func Translate(array:  [Any]) -> [Model] {
         return array.map { (item) -> Model in
             if let item = item as? Model {
