@@ -1,8 +1,8 @@
 //
-//  Package.swift
+//  Parser.swift
 //  BetterLibrary
 //
-//  Created by Holly Schilling on 1/21/17.
+//  Created by Holly Schilling on 3/8/17.
 //
 //  Copyright 2017 Better Practice Solutions
 //
@@ -18,27 +18,23 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import Foundation
 
-import PackageDescription
+public protocol Parser {
+    associatedtype InputType
+    associatedtype OutputType
+    
+    func canParse(_ input: InputType) -> Bool
+    func parse(_ input: InputType) throws -> OutputType
+}
 
-var package = Package(
-    name: "BetterLibrary"
-)
-let asyncTarget = Target(
-    name: "Async",
-    dependencies: []
-)
-let modelTarget = Target(
-    name: "Model",
-    dependencies: []
-)
-let networkTarget = Target(
-    name: "NetworkServices",
-    dependencies: [
-        .Target(name: "Async"),
-        .Target(name: "Model"),
-        ]
-)
+extension Parser {
+    
+    public func canParse(_ input: InputType) -> Bool {
+        return true
+    }
+}
 
-package.targets = [asyncTarget, modelTarget, networkTarget]
-
+public enum ParserError: Error {
+    case parserDeclined
+}

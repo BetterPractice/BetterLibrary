@@ -1,8 +1,8 @@
 //
-//  Package.swift
+//  ModelJSONParser.swift
 //  BetterLibrary
 //
-//  Created by Holly Schilling on 1/21/17.
+//  Created by Holly Schilling on 3/9/17.
 //
 //  Copyright 2017 Better Practice Solutions
 //
@@ -18,27 +18,21 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import Foundation
+import Model
 
-import PackageDescription
-
-var package = Package(
-    name: "BetterLibrary"
-)
-let asyncTarget = Target(
-    name: "Async",
-    dependencies: []
-)
-let modelTarget = Target(
-    name: "Model",
-    dependencies: []
-)
-let networkTarget = Target(
-    name: "NetworkServices",
-    dependencies: [
-        .Target(name: "Async"),
-        .Target(name: "Model"),
-        ]
-)
-
-package.targets = [asyncTarget, modelTarget, networkTarget]
-
+public struct ModelJSONParser: Parser {
+    
+    public var readingOptions: JSONSerialization.ReadingOptions = []
+    
+    public init() { }
+    
+    public func canParse(_ input: Data) -> Bool {
+        return input.count > 0
+    }
+    
+    public func parse(_ input: Data) throws -> Model {
+        let json = try JSONSerialization.jsonObject(with: input, options: readingOptions)
+        return Model(json)
+    }
+}
