@@ -18,7 +18,7 @@ public struct ThreeStageParser<FirstParserType: Parser, SecondParserType: Parser
         return firstParser.canParse(input)
     }
     
-    public func parse(_ input: FirstParserType) throws -> ThirdParserType.OutputType {
+    public func parse(_ input: FirstParserType.InputType) throws -> ThirdParserType.OutputType {
         let firstResult: FirstParserType.OutputType = try firstParser.parse(input)
         
         guard secondParser.canParse(firstResult) else {
