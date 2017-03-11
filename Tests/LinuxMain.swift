@@ -19,7 +19,7 @@
 //  limitations under the License.
 
 import XCTest
-import AsyncTests
+import BetterLibrary
 
 XCTMain([
      testCase(AsyncTaskTests.allTests),
