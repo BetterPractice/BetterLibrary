@@ -19,8 +19,6 @@
 //  limitations under the License.
 
 import Foundation
-import Async
-import Model
 
 open class ServiceManager {
     

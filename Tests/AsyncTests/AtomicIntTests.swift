@@ -20,7 +20,7 @@
 
 import XCTest
 import Dispatch
-@testable import Async
+@testable import BetterLibrary
 
 public class AtomicIntTests: XCTestCase {
     

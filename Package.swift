@@ -24,21 +24,4 @@ import PackageDescription
 var package = Package(
     name: "BetterLibrary"
 )
-let asyncTarget = Target(
-    name: "Async",
-    dependencies: []
-)
-let modelTarget = Target(
-    name: "Model",
-    dependencies: []
-)
-let networkTarget = Target(
-    name: "NetworkServices",
-    dependencies: [
-        .Target(name: "Async"),
-        .Target(name: "Model"),
-        ]
-)
-
-package.targets = [asyncTarget, modelTarget, networkTarget]
 
