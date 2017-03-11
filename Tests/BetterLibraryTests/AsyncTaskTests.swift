@@ -21,7 +21,7 @@
 import XCTest
 import Foundation
 import Dispatch
-@testable import Async
+@testable import BetterLibrary
 
 public class AsyncTaskTests: XCTestCase {
     

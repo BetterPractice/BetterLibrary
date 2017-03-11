@@ -21,19 +21,7 @@
 
 import PackageDescription
 
-let package = Package(
+var package = Package(
     name: "BetterLibrary"
-)
-package.targets.append(
-    Target(
-        name: "Async",
-        dependencies: []
-    )
-)
-package.targets.append(
-    Target(
-        name: "Model",
-        dependencies: []
-    )
 )
 

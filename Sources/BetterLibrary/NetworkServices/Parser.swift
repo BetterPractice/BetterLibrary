@@ -1,8 +1,8 @@
 //
-//  LinuxMain.swift
-//  BetterLibrary Tests
+//  Parser.swift
+//  BetterLibrary
 //
-//  Created by Holly Schilling on 1/21/17.
+//  Created by Holly Schilling on 3/8/17.
 //
 //  Copyright 2017 Better Practice Solutions
 //
@@ -18,11 +18,23 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import XCTest
-import BetterLibraryTests
+import Foundation
 
-XCTMain([
-     testCase(AsyncTaskTests.allTests),
-     testCase(AtomicIntTests.allTests),
-     testCase(TaskJoinerTests.allTests),
-])
+public protocol Parser {
+    associatedtype InputType
+    associatedtype OutputType
+    
+    func canParse(_ input: InputType) -> Bool
+    func parse(_ input: InputType) throws -> OutputType
+}
+
+extension Parser {
+    
+    public func canParse(_ input: InputType) -> Bool {
+        return true
+    }
+}
+
+public enum ParserError: Error {
+    case parserDeclined
+}
