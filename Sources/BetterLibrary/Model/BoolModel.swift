@@ -28,10 +28,7 @@ extension Model {
     }
     
     public func boolValue() throws -> Bool {
-        if let bool = bool {
-            return bool
-        }
-        throw ModelError.WrongType
+        return try impliedUnwrap()
     }
     
 }

@@ -21,10 +21,11 @@
 import Foundation
 
 public enum ModelError : Error {
-    case NullObject
-    case WrongType
-    case MissingIndex(Int)
-    case MissingKey(String)
+    case nullObject
+    case wrongType
+    case notConvertable
+    case missingIndex(Int)
+    case missingKey(String)
 }
 
 internal extension Array where Element: Equatable {
@@ -141,8 +142,10 @@ public struct Model: Equatable {
     public func impliedUnwrap<ExpectedType>() throws -> ExpectedType {
         if let value = value as? ExpectedType {
             return value
+        }  else if value == nil {
+            throw ModelError.nullObject
         } else {
-            throw ModelError.WrongType
+            throw ModelError.wrongType
         }
     }
     

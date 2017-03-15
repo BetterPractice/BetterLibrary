@@ -29,10 +29,7 @@ extension Model {
     }
     
     public func objectValue() throws -> [String : Model] {
-        if let object = object {
-            return object
-        }
-        throw ModelError.WrongType
+        return try impliedUnwrap()
     }
     
     public func model(for key: String) throws -> Model {
@@ -40,7 +37,7 @@ extension Model {
         if let result = value[key] {
             return result
         }
-        throw ModelError.MissingKey(key)
+        throw ModelError.missingKey(key)
     }
     
     public subscript(key: String) -> Model {

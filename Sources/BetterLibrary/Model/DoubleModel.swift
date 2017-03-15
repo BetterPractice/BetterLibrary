@@ -29,9 +29,6 @@ extension Model {
     }
     
     public func doubleValue() throws -> Double {
-        if let double = double {
-            return double
-        }
-        throw ModelError.WrongType
+        return try impliedUnwrap()
     }
 }

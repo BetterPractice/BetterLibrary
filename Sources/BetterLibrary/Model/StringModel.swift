@@ -29,9 +29,6 @@ extension Model {
     }
     
     public func stringValue() throws -> String {
-        if let string = string {
-            return string
-        }
-        throw ModelError.NullObject
+        return try impliedUnwrap()
     }
 }
