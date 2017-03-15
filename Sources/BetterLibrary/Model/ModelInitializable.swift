@@ -1,6 +1,6 @@
 //
 //  ModelInitializable.swift
-//  BetterLibrary
+//  BetterLibrary Model
 //
 //  Created by Holly Schilling on 3/15/17.
 //
