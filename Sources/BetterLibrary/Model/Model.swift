@@ -169,6 +169,21 @@ public struct Model: Equatable {
         return nil
     }
     
+    public func follow(path: [Any]) -> Model {
+        var result = self
+        for aStep in path {
+            if let value = aStep as? String {
+                result = result[value]
+            } else if let value = aStep as? Int {
+                result = result[value]
+            } else {
+                let type = type(of: aStep)
+                fatalError("Path can only contain objects of type Int or String. Actual: \(type)")
+            }
+        }
+        return result
+    }
+    
     static func Translate(array:  [Any]) -> [Model] {
         return array.map { (item) -> Model in
             if let item = item as? Model {
