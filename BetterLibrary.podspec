@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
   s.summary = "A Better Library to make Swift programming cleaner and more efficient."
   s.homepage = "https://github.com/BetterPractice/BetterLibrary"
   s.authors = { "hollyschilling" => "holly.a.schilling@outlook.com" }
-  s.version = '2.1.1'
+  s.version = '2.1.2'
   s.license = { :type => 'Apache', :file => 'LICENSE.txt' }
   s.source = { :git => "https://github.com/BetterPractice/BetterLibrary.git", :tag => s.version }
 
