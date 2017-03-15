@@ -22,10 +22,16 @@ import Foundation
 
 public struct ModelInitializableParser<ResultType: ModelInitializable>: Parser {
     
+    public func canParse(_ input: Model) -> Bool {
+        return !input.isNull
+    }
+    
     public func parse(_ input: Model) throws -> ResultType {
         let result = try ResultType.init(model:  input)
         return result
     }
+    
+    public init() { }
 }
 
 public struct ModelInitializableArrayParser<ResultType: ModelInitializable>: Parser {
@@ -49,4 +55,5 @@ public struct ModelInitializableArrayParser<ResultType: ModelInitializable>: Par
         return result
     }
     
+    public init() { }
 }
