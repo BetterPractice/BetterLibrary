@@ -91,13 +91,14 @@ open class ServiceManager {
     
     //MARK: - Model Parsing Methods
     
-    open func fetchAndParse<ParserType: Parser>(url: URL, modelParser: ParserType) -> AsyncTask<ParserType.OutputType> where ParserType.InputType == Model {
+    open func fetchAndParse<ParserType: Parser>(url: URL, modelParser: ParserType, at parsingPath: [Any] = []) -> AsyncTask<ParserType.OutputType> where ParserType.InputType == Model {
         let request = URLRequest(url: url)
-        return fetchAndParse(request: request, modelParser: modelParser)
+        return fetchAndParse(request: request, modelParser: modelParser, at: parsingPath)
     }
     
-    open func fetchAndParse<ParserType: Parser>(request: URLRequest, modelParser: ParserType) -> AsyncTask<ParserType.OutputType> where ParserType.InputType == Model {
+    open func fetchAndParse<ParserType: Parser>(request: URLRequest, modelParser: ParserType, at parsingPath: [Any] = []) -> AsyncTask<ParserType.OutputType> where ParserType.InputType == Model {
         let parser = StageModelJSONParser(nextParser: modelParser)
+        parser.startPath = parsingPath
         return fetchAndParse(request: request, dataParser: parser)
     }
     
