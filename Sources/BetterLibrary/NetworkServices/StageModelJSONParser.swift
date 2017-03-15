@@ -39,7 +39,8 @@ open class StageModelJSONParser<NextParserType: Parser>: TwoStageParser<ModelJSO
         super.init(firstStage: ModelJSONParser(), secondStage: nextParser)
     }
 
-    open func prepareForSecondStage(_ input: Model) -> Model {
-        return input.follow(path: startPath)
+    open override func prepareForSecondStage(_ firstParserResult: Model) throws -> NextParserType.InputType {
+        return try firstParserResult.follow(path: startPath)
     }
+    
 }
