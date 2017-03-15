@@ -1,6 +1,6 @@
 //
 //  StageModelJSONParser.swift
-//  BetterLibrary
+//  BetterLibrary NetworkServices
 //
 //  Created by Holly Schilling on 3/9/17.
 //
@@ -20,28 +20,26 @@
 
 import Foundation
 
-public struct StageModelJSONParser<NextParserType: Parser>: Parser where NextParserType.InputType == Model {
+open class StageModelJSONParser<NextParserType: Parser>: TwoStageParser<ModelJSONParser, NextParserType> where NextParserType.InputType == Model {
     
-    public var readingOptions: JSONSerialization.ReadingOptions = []
-    public let nextParser: NextParserType
-    
-    public init(nextParser: NextParserType) {
-        self.nextParser = nextParser
-    }
-    
-    public func canParse(_ input: Data) -> Bool {
-        return input.count > 0
-    }
-    
-    public func parse(_ input: Data) throws -> NextParserType.OutputType {
-        let json = try JSONSerialization.jsonObject(with: input, options: readingOptions)
-        let model = Model(json)
-        
-        guard nextParser.canParse(model) else {
-            throw ParserError.parserDeclined
+    public var readingOptions: JSONSerialization.ReadingOptions {
+        get {
+            return firstStage.readingOptions
         }
-        
-        let result = try nextParser.parse(model)
-        return result
+        set {
+            firstStage.readingOptions = newValue
+        }
+    }
+    
+    public var startPath: [Any]
+    
+    
+    public init(nextParser: NextParserType, startPath: [Any] = []) {
+        self.startPath = startPath
+        super.init(firstStage: ModelJSONParser(), secondStage: nextParser)
+    }
+
+    open func prepareForSecondStage(_ input: Model) -> Model {
+        return input.follow(path: startPath)
     }
 }

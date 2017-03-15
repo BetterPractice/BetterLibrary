@@ -1,8 +1,8 @@
 //
-//  Parser.swift
-//  BetterLibrary NetworkServices
+//  ModelInitializable.swift
+//  BetterLibrary Model
 //
-//  Created by Holly Schilling on 3/8/17.
+//  Created by Holly Schilling on 3/15/17.
 //
 //  Copyright 2017 Better Practice Solutions
 //
@@ -20,21 +20,7 @@
 
 import Foundation
 
-public protocol Parser {
-    associatedtype InputType
-    associatedtype OutputType
+public protocol ModelInitializable {
     
-    func canParse(_ input: InputType) -> Bool
-    func parse(_ input: InputType) throws -> OutputType
-}
-
-extension Parser {
-    
-    public func canParse(_ input: InputType) -> Bool {
-        return true
-    }
-}
-
-public enum ParserError: Error {
-    case parserDeclined
+    init(model: Model) throws
 }

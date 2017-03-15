@@ -30,10 +30,7 @@ extension Model {
     }
     
     public func arrayValue() throws -> [Model] {
-        if let array = array {
-            return array
-        }
-        throw ModelError.WrongType
+        return try impliedUnwrap()
     }
     
     public func model(at index: Int) throws -> Model {
@@ -41,7 +38,7 @@ extension Model {
         if index >= 0 && index < array.count {
             return array[index]
         }
-        throw ModelError.MissingIndex(index)
+        throw ModelError.missingIndex(index)
     }
     
     public subscript(index: Int) -> Model {

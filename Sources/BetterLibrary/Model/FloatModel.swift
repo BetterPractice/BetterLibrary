@@ -29,9 +29,6 @@ extension Model {
     }
     
     public func floatValue() throws -> Float {
-        if let float = float {
-            return float
-        }
-        throw ModelError.WrongType
+        return try impliedUnwrap()
     }
 }

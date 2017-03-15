@@ -29,9 +29,6 @@ extension Model {
     }
     
     public func intValue() throws -> Int {
-        if let int = int {
-            return int
-        }
-        throw ModelError.WrongType
+        return try impliedUnwrap()
     }
 }

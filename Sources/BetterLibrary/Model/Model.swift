@@ -21,10 +21,12 @@
 import Foundation
 
 public enum ModelError : Error {
-    case NullObject
-    case WrongType
-    case MissingIndex(Int)
-    case MissingKey(String)
+    case nullObject
+    case wrongType
+    case notConvertable
+    case missingIndex(Int)
+    case missingKey(String)
+    case invalidPathItem(Any)
 }
 
 internal extension Array where Element: Equatable {
@@ -141,9 +143,48 @@ public struct Model: Equatable {
     public func impliedUnwrap<ExpectedType>() throws -> ExpectedType {
         if let value = value as? ExpectedType {
             return value
+        }  else if value == nil {
+            throw ModelError.nullObject
         } else {
-            throw ModelError.WrongType
+            throw ModelError.wrongType
         }
+    }
+    
+    public func fullyUnwrapped() -> Any? {
+        if let obj = object {
+            var result: [String: Any] = [:]
+            for (aKey, aValue) in obj {
+                result[aKey] = aValue.fullyUnwrapped()
+            }
+            return result
+        } else if let obj = array {
+            var result: [Any] = []
+            for aValue in obj {
+                if let flattenedValue = aValue.fullyUnwrapped() {
+                    result.append(flattenedValue)
+                }
+            }
+            return result
+        } else if let obj = value as? Model {
+            return obj.fullyUnwrapped()
+        } else if let obj = value {
+            return obj
+        }
+        return nil
+    }
+    
+    public func follow(path: [Any]) throws -> Model {
+        var result = self
+        for aStep in path {
+            if let value = aStep as? String {
+                result = try model(for: value)
+            } else if let value = aStep as? Int {
+                result = try model(at: value)
+            } else {
+                throw ModelError.invalidPathItem(aStep)
+            }
+        }
+        return result
     }
     
     static func Translate(array:  [Any]) -> [Model] {
@@ -156,7 +197,7 @@ public struct Model: Equatable {
         }
     }
     
-    static func Translate(object: [String: Any]) -> [String : Model] {
+    static func Translate(object: [String: Any]) -> [String: Model] {
         var result = [String : Model]()
         for (aKey, aValue) in object {
             if let aValue = aValue as? Model {

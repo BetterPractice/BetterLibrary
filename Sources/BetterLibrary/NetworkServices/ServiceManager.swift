@@ -1,6 +1,6 @@
 //
 //  ServiceManager.swift
-//  BetterLibrary
+//  BetterLibrary NetworkServices
 //
 //  Created by Holly Schilling on 3/8/17.
 //
@@ -31,7 +31,7 @@ open class ServiceManager {
     public let workQueue: OperationQueue = OperationQueue()
     
     
-    public init(session: URLSession) {
+    public init(session: URLSession = URLSession.shared) {
         self.session = session
     }
     
