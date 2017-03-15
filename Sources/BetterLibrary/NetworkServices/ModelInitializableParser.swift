@@ -1,6 +1,6 @@
 //
 //  ModelInitializableParser.swift
-//  BetterLibrary
+//  BetterLibrary NetworkServices
 //
 //  Created by Holly Schilling on 3/15/17.
 //

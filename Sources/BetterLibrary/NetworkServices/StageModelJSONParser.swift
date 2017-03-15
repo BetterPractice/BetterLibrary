@@ -1,6 +1,6 @@
 //
 //  StageModelJSONParser.swift
-//  BetterLibrary
+//  BetterLibrary NetworkServices
 //
 //  Created by Holly Schilling on 3/9/17.
 //
