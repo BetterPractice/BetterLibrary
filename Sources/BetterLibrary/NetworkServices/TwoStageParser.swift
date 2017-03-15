@@ -20,28 +20,38 @@
 
 import Foundation
 
-public struct TwoStageParser<FirstParserType: Parser, SecondParserType: Parser>: Parser where FirstParserType.OutputType==SecondParserType.InputType {
+open class TwoStageParser<FirstParserType: Parser, SecondParserType: Parser>: Parser {
     
-    public let firstStage: FirstParserType
-    public let secondStage: SecondParserType
+    public var firstStage: FirstParserType
+    public var secondStage: SecondParserType
     
     public init(firstStage: FirstParserType, secondStage: SecondParserType) {
         self.firstStage = firstStage
         self.secondStage = secondStage
     }
     
-    public func canParse(_ input: FirstParserType.InputType) -> Bool {
+    open func canParse(_ input: FirstParserType.InputType) -> Bool {
         return firstStage.canParse(input)
     }
     
-    public func parse(_ input: FirstParserType.InputType) throws -> SecondParserType.OutputType {
+    open func parse(_ input: FirstParserType.InputType) throws -> SecondParserType.OutputType {
         let firstResult = try firstStage.parse(input)
+
+        let secondParserInput = try prepareForSecondStage(firstResult)
         
-        guard secondStage.canParse(firstResult) else {
+        guard secondStage.canParse(secondParserInput) else {
             throw ParserError.parserDeclined
         }
         
-        let secondResult = try secondStage.parse(firstResult)
+        let secondResult = try secondStage.parse(secondParserInput)
         return secondResult
+    }
+    
+    open func prepareForSecondStage(_ firstParserResult: FirstParserType.OutputType) throws -> SecondParserType.InputType {
+        guard let secondParserInput = firstParserResult as? SecondParserType.InputType else {
+            fatalError("When parser types not aligned, \(#function) must be implemented.")
+        }
+        
+        return secondParserInput
     }
 }
