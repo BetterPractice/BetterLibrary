@@ -26,6 +26,7 @@ public enum ModelError : Error {
     case notConvertable
     case missingIndex(Int)
     case missingKey(String)
+    case invalidPathItem(Any)
 }
 
 internal extension Array where Element: Equatable {
@@ -172,16 +173,15 @@ public struct Model: Equatable {
         return nil
     }
     
-    public func follow(path: [Any]) -> Model {
+    public func follow(path: [Any]) throws -> Model {
         var result = self
         for aStep in path {
             if let value = aStep as? String {
-                result = result[value]
+                result = try model(for: value)
             } else if let value = aStep as? Int {
-                result = result[value]
+                result = try model(at: value)
             } else {
-                let type = type(of: aStep)
-                fatalError("Path can only contain objects of type Int or String. Actual: \(type)")
+                throw ModelError.invalidPathItem(aStep)
             }
         }
         return result
