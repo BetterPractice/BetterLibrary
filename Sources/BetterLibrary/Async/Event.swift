@@ -20,42 +20,36 @@
 
 import Foundation
 
-public class Event<ParamType> {
+open class Event<ParamType> {
     
-    public static func +=<ParamType>(lhs: Event<ParamType>, rhs: @escaping (ParamType) -> Void) {
-        lhs.add(action: rhs)
-    }
+    private var registered: [(String, Invocation<ParamType, Void>)] = []
     
-    public static func +=<ParamType>(lhs: Event<ParamType>, rhs: Invocation<ParamType>) {
-        lhs.add(invocation: rhs)
-    }
-    
-    private var registered: [(String, Invocation<ParamType>)] = []
-    
-    @discardableResult
-    public func add<TargetType: AnyObject>(target: TargetType, action: @escaping (TargetType) -> (ParamType) -> Void) -> String {
+    open func add<TargetType: AnyObject>(target: TargetType, action: @escaping (TargetType) -> (ParamType) -> Void) -> DisposalObject {
         let invocation = Invocation(target: target, action: action)
         return add(invocation: invocation)
     }
     
-    @discardableResult
-    public func add(action: @escaping (ParamType) -> Void) -> String {
+    open func add(action: @escaping (ParamType) -> Void) -> DisposalObject {
         let invocation = Invocation(action: action)
         return add(invocation: invocation)
     }
     
-    @discardableResult
-    public func add(invocation: Invocation<ParamType>) -> String {
+    open func add(invocation: Invocation<ParamType, Void>) -> DisposalObject {
         let token = UUID().uuidString
         registered.append((token, invocation))
-        return token
+        
+        let disposal = DisposalObject { [weak self] in
+            self?.remove(by: token)
+        }
+        
+        return disposal
     }
     
-    public func remove(by token: String) {
+    private func remove(by token: String) {
         registered = registered.filter { $0.0 != token }
     }
     
-    public func fire(_ param: ParamType) {
+    open func trigger(_ param: ParamType) {
         for (_, anInvocation) in registered {
             anInvocation.action(param)
         }

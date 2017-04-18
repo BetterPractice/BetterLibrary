@@ -18,15 +18,15 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-public struct Invocation<ParamType> {
+public struct Invocation<ParamType, ReturnType> {
     
-    public let action: (ParamType) -> Void
+    public let action: (ParamType) -> ReturnType
     
-    public init(action: @escaping (ParamType) -> Void) {
+    public init(action: @escaping (ParamType) -> ReturnType) {
         self.action = action
     }
     
-    public init<TargetType: AnyObject>(target: TargetType, action: @escaping (TargetType) -> (ParamType) -> Void) {
+    public init<TargetType: AnyObject>(target: TargetType, action: @escaping (TargetType) -> (ParamType) -> ReturnType) where ReturnType == Void {
         self.action = { [weak target] (param) in
             guard let target = target else {
                 return
