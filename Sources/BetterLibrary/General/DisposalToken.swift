@@ -1,5 +1,5 @@
 //
-//  NotificationCenter+DisposalObject.swift
+//  DisposalToken.swift
 //  BetterLibrary
 //
 //  Created by Holly Schilling on 4/17/17.
@@ -18,20 +18,25 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
-
-extension NotificationCenter {
+public final class DisposalToken {
     
-    public func addObserver(forName name: NSNotification.Name?,
-                            object: Any?,
-                            queue: OperationQueue?,
-                            invocation: Invocation<Notification, Void>) -> DisposalObject {
-        let obj = addObserver(forName: name,
-                              object: object,
-                              queue: queue,
-                              using: invocation.action)
-        return DisposalObject { [weak self] in
-            self?.removeObserver(obj)
+    public private(set) var isDisposed: Bool = false
+    
+    public let action: () -> Void
+    
+    public init(action: @escaping () -> Void) {
+        self.action = action
+    }
+
+    deinit {
+        dispose()
+    }
+    
+    public func dispose() {
+        guard !isDisposed else {
+            return
         }
+        
+        action()
     }
 }

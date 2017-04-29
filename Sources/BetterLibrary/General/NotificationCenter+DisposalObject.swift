@@ -1,8 +1,8 @@
 //
-//  Event.swift
+//  NotificationCenter+DisposalObject.swift
 //  BetterLibrary
 //
-//  Created by Holly Schilling on 4/13/17.
+//  Created by Holly Schilling on 4/17/17.
 //
 //  Copyright 2017 Better Practice Solutions
 //
@@ -20,31 +20,20 @@
 
 import Foundation
 
-open class Event<ParamType> {
+extension NotificationCenter {
     
-    private var registered: [(String, (ParamType) -> Void)] = []
-    
-    open func add(action: @escaping (ParamType) -> Void) -> DisposalToken {
-        let identifier = UUID().uuidString
-        registered.append((identifier, action))
-        
-        let token = DisposalToken(
+    public func addObserver(forName name: NSNotification.Name?,
+                            object: Any?,
+                            queue: OperationQueue?,
+                            method: @escaping (Notification) -> Void) -> DisposalToken {
+        let obj = addObserver(forName: name,
+                              object: object,
+                              queue: queue,
+                              using: method)
+        return DisposalToken(
             action: Invocation.WeakAction(
                 target: self,
-                param: identifier,
-                method: Event.remove))
-        return token
-    }
-    
-    private func remove(by token: String) {
-        registered = registered.filter { $0.0 != token }
-    }
-    
-    open func trigger(_ param: ParamType) {
-        for (_, anAction) in registered {
-            anAction(param)
-        }
+                param: obj,
+                method: NotificationCenter.removeObserver))
     }
 }
-
-
