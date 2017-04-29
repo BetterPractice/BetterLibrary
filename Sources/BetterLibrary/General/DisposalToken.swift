@@ -18,8 +18,18 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-public final class DisposalToken {
+public final class DisposalToken: Hashable, Comparable {
     
+    public static func ==(lhs: DisposalToken, rhs: DisposalToken) -> Bool {
+        return lhs === rhs
+    }
+    
+    public static func <(lhs: DisposalToken, rhs: DisposalToken) -> Bool {
+        let l = ObjectIdentifier(lhs)
+        let r = ObjectIdentifier(rhs)
+        return l < r
+    }
+
     public private(set) var isDisposed: Bool = false
     
     public let action: () -> Void
@@ -38,5 +48,12 @@ public final class DisposalToken {
         }
         
         action()
+    }
+    
+    //MARK: - Hashable
+    
+    public var hashValue: Int {
+        let identifier = ObjectIdentifier(self)
+        return identifier.hashValue
     }
 }
