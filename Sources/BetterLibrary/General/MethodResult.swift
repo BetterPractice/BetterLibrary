@@ -1,6 +1,6 @@
 //
 //  MethodResult.swift
-//  BetterLibrary Async
+//  BetterLibrary
 //
 //  Created by Holly Schilling on 1/21/17.
 //
