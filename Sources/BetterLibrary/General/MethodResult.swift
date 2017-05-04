@@ -42,37 +42,33 @@ public enum MethodResult<T> {
     }
     
     public var result: T? {
-        switch self {
-        case .success(let value):
+        if case .success(let value) = self {
             return value
-        default:
+        } else {
             return nil
         }
     }
     
     public var error: Error? {
-        switch self {
-        case .error(let e):
+        if case .error(let e) = self {
             return e
-        default:
+        } else {
             return nil
         }
     }
     
     public var isSuccessful: Bool {
-        switch self {
-        case .success(_):
+        if case .success(_) = self {
             return true
-        default:
+        } else {
             return false
         }
     }
     
     public var isError: Bool {
-        switch self {
-        case .error(_):
+        if case .error(_) = self {
             return true
-        default:
+        } else {
             return false
         }
     }
