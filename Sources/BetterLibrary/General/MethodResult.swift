@@ -24,6 +24,16 @@ public enum MethodResult<T> {
     case success(T)
     case error(Error)
     
+    public static func from(_ block: () throws -> T) -> MethodResult<T> {
+        do {
+            let result = try block()
+            return .success(result)
+        }
+        catch {
+            return .error(error)
+        }
+    }
+    
     public init(_ value: T) {
         self = .success(value)
     }
