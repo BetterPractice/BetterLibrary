@@ -63,7 +63,7 @@ public class TaskJoinerTests: XCTestCase {
             
             let expectation = self.expectation(description: "Completion called once all tasks complete.")
             
-            joiner.asyncWait { (result) in
+            _ = joiner.asyncWait { (result) in
                 do {
                     let table = try result.value()
                     XCTAssert(table.count==iterations, "Wrong number of rows in result table.")

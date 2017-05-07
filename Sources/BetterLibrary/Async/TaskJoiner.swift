@@ -46,7 +46,7 @@ open class TaskJoiner<IdentifierType: Hashable, ItemType>: AsyncTask<[Identifier
             taskResults[identifier] = result
             
             if pendingTasks.count == 0 {
-                setResult(.success(taskResults))
+                setMethodResult(.success(taskResults))
             }
         }
     }

@@ -65,7 +65,7 @@ open class ServiceManager {
                 }
                 do {
                     let result = try parser.parse((data, response))
-                    asyncTask.setResult(result)
+                    asyncTask.setSuccess(result)
                 }
                 catch {
                     asyncTask.setError(error)

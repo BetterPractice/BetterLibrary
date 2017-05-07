@@ -23,42 +23,21 @@ import Dispatch
 
 open class AsyncTask<ResultType> {
     
-    public class func createTask(dispatchQueue queue: DispatchQueue, block: @escaping () throws -> ResultType) -> AsyncTask<ResultType> {
-        let task: AsyncTask<ResultType> = AsyncTask()
-        queue.async {
-            do {
-                let result = try block()
-                task.setResult(result)
-            }
-            catch {
-                task.setResult(.error(error))
-            }
+    public class func createTask(workQueue: Queue, work: @escaping () throws -> ResultType) -> AsyncTask<ResultType> {
+        let asyncTask: AsyncTask<ResultType> = AsyncTask()
+        workQueue.enqueue {
+            let result = MethodResult.from(work)
+            asyncTask.setMethodResult(result)
         }
-        return task
-    }
-
-    public class func createTask(operationQueue queue: OperationQueue, block: @escaping () throws -> ResultType) -> AsyncTask<ResultType> {
-        let task: AsyncTask<ResultType> = AsyncTask()
-        queue.addOperation {
-            do {
-                let result = try block()
-                task.setResult(result)
-            }
-            catch {
-                task.setResult(.error(error))
-            }
-        }
-        return task
+        return asyncTask
     }
     
     private let syncQueue = DispatchQueue(label: "AsyncTask Sync Queue")
-    private let condition: NSCondition = NSCondition()
+    private var condition: NSCondition?
     private var _result: MethodResult<ResultType>?
 
-    private var opCallback: (queue: OperationQueue, handler: (MethodResult<ResultType>)->Void)?
-    private var dispatchCallback: (queue: DispatchQueue, handler: (MethodResult<ResultType>)->Void)?
-    
-    
+    private var _callback: (Queue, Callback<ResultType>)? = nil
+
     open var isCompleted: Bool {
         return syncQueue.sync {
             return _result != nil
@@ -69,17 +48,19 @@ open class AsyncTask<ResultType> {
         
     }
     
-    open func setResult(_ result: MethodResult<ResultType>) {
+    open func setMethodResult(_ result: MethodResult<ResultType>) {
         syncQueue.sync {
-            performCallback(result)
+            _result = result
+            
+            performCallbackIfReady()
         }
     }
-    open func setResult(_ result: ResultType) {
-        setResult(.success(result))
+    open func setSuccess(_ result: ResultType) {
+        setMethodResult(.success(result))
     }
     
     open func setError(_ error: Error) {
-        setResult(.error(error))
+        setMethodResult(.error(error))
     }
     
     open func wait() throws -> ResultType {
@@ -88,9 +69,24 @@ open class AsyncTask<ResultType> {
                 return _result
             }
         }
+
+        // Create a condition variable to indicate that someone is waiting
+        syncQueue.sync {
+            condition = condition ?? NSCondition()
+        }
+        defer {
+            syncQueue.sync {
+                self.condition = nil
+            }
+        }
+        
+        // Create a local reference to ensure self.condition reference isn't used
+        guard let condition = condition else {
+            fatalError("Condition not set!")
+        }
         
         while true {
-            if let result = _result {
+            if let result = checkResult() {
                 return try result.value()
             }
             condition.lock()
@@ -99,41 +95,55 @@ open class AsyncTask<ResultType> {
         }
     }
     
-    open func asyncWait(queue: OperationQueue = .main, handler: @escaping (MethodResult<ResultType>) -> Void) {
-        syncQueue.sync {
-            opCallback = (queue, handler)
-            
-            if let result = _result {
-                performCallback(result)
-            }
+    private func performCallbackIfReady() {
+        //Should be called from withing the syncQueue only
+        guard let result = _result else {
+            return
         }
-    }
-    
-    open func asyncWait(queue: DispatchQueue, handler: @escaping (MethodResult<ResultType>) -> Void) {
-        syncQueue.sync {
-            dispatchCallback = (queue, handler)
-            
-            if let result = _result {
-                performCallback(result)
-            }
-        }
-    }
-    
-    fileprivate func performCallback(_ result: MethodResult<ResultType>) {
-        _result = result
         
-        if let callback = opCallback {
-            callback.queue.addOperation {
-                callback.handler(result)
+        if let (queue, block) = _callback {
+            queue.enqueue {
+                block.perform(result: result)
             }
-        } else if let callback = dispatchCallback {
-            callback.queue.async {
-                callback.handler(result)
-            }
-        } else {
+        }
+        
+        if let condition = condition {
             condition.lock()
-            condition.signal()
+            condition.wait()
             condition.unlock()
         }
+    }
+    
+    open func asyncWait<ContinuedResult>(queue: Queue = OperationQueue.main, handler: @escaping (MethodResult<ResultType>) throws -> ContinuedResult) -> AsyncTask<ContinuedResult> {
+        let newTask = AsyncTask<ContinuedResult>()
+        
+        func runContinuation(_ result: MethodResult<ResultType>) {
+            newTask.setMethodResult(.from({ try handler(result) }))
+        }
+        
+        syncQueue.sync {
+            _callback = (queue, .unified(runContinuation))
+            
+            performCallbackIfReady()
+        }
+        return newTask
+    }
+    
+    open func continueTask<ContinuedResult>(queue: Queue = OperationQueue.main, successHandler: @escaping (ResultType) throws -> ContinuedResult) -> AsyncTask<ContinuedResult> {
+        let newTask = AsyncTask<ContinuedResult>()
+        
+        func runSuccess(_ result: ResultType) {
+            newTask.setMethodResult(.from({ try successHandler(result) }))
+        }
+        func forwardError(_ error: Error) {
+            newTask.setError(error)
+        }
+
+        syncQueue.sync {
+            _callback = (queue, Callback(success: runSuccess, error: forwardError))
+            
+            performCallbackIfReady()
+        }
+        return newTask
     }
 }
