@@ -109,7 +109,7 @@ open class AsyncTask<ResultType> {
         
         if let condition = condition {
             condition.lock()
-            condition.wait()
+            condition.broadcast()
             condition.unlock()
         }
     }
