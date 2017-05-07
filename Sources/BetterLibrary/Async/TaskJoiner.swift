@@ -34,20 +34,42 @@ open class TaskJoiner<IdentifierType: Hashable, ItemType>: AsyncTask<[Identifier
         }
     }
     
-    open func markStart(identifier: IdentifierType) {
-        syncQueue.sync {
-            let _ = pendingTasks.insert(identifier)
+    private var _isReady = false
+    public var isReady: Bool {
+        return syncQueue.sync {
+            return _isReady
         }
     }
     
-    open func markCompletion(identifier: IdentifierType, result: MethodResult<ItemType>) {
+    open func track(identifier: IdentifierType, task: AsyncTask<ItemType>) {
         syncQueue.sync {
-            pendingTasks.remove(identifier)
-            taskResults[identifier] = result
-            
-            if pendingTasks.count == 0 {
-                setMethodResult(.success(taskResults))
+            guard !_isReady else {
+                fatalError("Cannot call \(#function) once TaskJoiner is marked as ready.")
             }
+            _ = task.asyncWait(queue: syncQueue) { (result) -> Void in
+                self.pendingTasks.remove(identifier)
+                self.taskResults[identifier] = result
+                
+                self.finalizeIfReady()
+            }
+            pendingTasks.insert(identifier)
+        }
+    }
+    
+    open func markReady() {
+        syncQueue.sync {
+            guard !_isReady else {
+                fatalError("\(#function) cannot be called multiple times.")
+            }
+            
+            _isReady = true
+            finalizeIfReady()
+        }
+    }
+    
+    private func finalizeIfReady() {
+        if _isReady && pendingTasks.count == 0 {
+            setSuccess(taskResults)
         }
     }
 }
