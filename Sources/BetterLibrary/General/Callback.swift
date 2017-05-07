@@ -39,20 +39,24 @@ public enum Callback<ParamType> {
     case split((ParamType) -> Void, (Error) -> Void)
     
     
-    public static func from<T>(success: @escaping (T) -> Void) -> Callback<T> {
-        return .successOnly(success)
+    public init(success: ((ParamType) -> Void)? = nil, error: ((Error) -> Void)? = nil) {
+        if
+            let success = success,
+            let error = error {
+                self = .split(success, error)
+        } else if
+            let success = success {
+                self = .successOnly(success)
+        } else if
+            let error = error {
+                self = .errorOnly(error)
+        } else {
+            self = .none
+        }
     }
     
-    public static func from<T>(error: @escaping (Error) -> Void) -> Callback<T> {
-        return .errorOnly(error)
-    }
-    
-    public static func from<T>(success: @escaping (T) -> Void, error: @escaping (Error) -> Void) -> Callback<T> {
-        return .split(success, error)
-    }
-    
-    public static func from<T>(unified: @escaping (MethodResult<T>) -> Void) -> Callback<T> {
-        return .unified(unified)
+    public init(unified: @escaping (MethodResult<ParamType>) -> Void) {
+        self = .unified(unified)
     }
     
     public func perform(value: ParamType) {
@@ -84,6 +88,7 @@ public enum Callback<ParamType> {
     public func perform(result: MethodResult<ParamType>) {
         if case .unified(let action) = self {
             action(result)
+            return
         }
         do {
             let value = try result.value()
