@@ -81,7 +81,7 @@ class NetworkParserServiceTests: XCTestCase {
         super.tearDown()
     }
     
-    func testData() {
+    func testPassingData() {
         emulator.data = simpleJSON
         emulator.statusCode = 200
         
@@ -176,6 +176,16 @@ class NetworkParserServiceTests: XCTestCase {
         catch {
             XCTFail("Unexpected error: \(error)")
         }
-        
+    }
+
+    public static var allTests : [(String, (NetworkParserServiceTests) -> () throws -> Void)] {
+        return [
+            ("testPassingData", testPassingData),
+            ("testInvalidStatusCode", testInvalidStatusCode),
+            ("testNoData", testNoData),
+            ("testModelValues", testModelValues),
+            ("testSimpleParser", testSimpleParser),
+            ("testModelInitializable", testModelInitializable),
+        ]
     }
 }
