@@ -28,7 +28,7 @@ open class Event<ParamType> {
         let identifier = UUID().uuidString
         registered.append((identifier, action))
         
-        let token = DisposalToken(
+        let token = BlockDisposalToken(
             action: Invocation.WeakAction(
                 target: self,
                 param: identifier,

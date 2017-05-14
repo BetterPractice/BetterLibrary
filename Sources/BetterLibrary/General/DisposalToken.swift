@@ -18,7 +18,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-public final class DisposalToken: Hashable, Comparable {
+open class DisposalToken: Hashable, Comparable {
     
     public static func ==(lhs: DisposalToken, rhs: DisposalToken) -> Bool {
         return lhs === rhs
@@ -32,12 +32,6 @@ public final class DisposalToken: Hashable, Comparable {
 
     public private(set) var isDisposed: Bool = false
     
-    public let action: () -> Void
-    
-    public init(action: @escaping () -> Void) {
-        self.action = action
-    }
-
     deinit {
         dispose()
     }
@@ -46,8 +40,13 @@ public final class DisposalToken: Hashable, Comparable {
         guard !isDisposed else {
             return
         }
+        disposalAction()
         
-        action()
+        isDisposed = true
+    }
+    
+    open func disposalAction() {
+        fatalError("Subclasses must implement \(#function).")
     }
     
     //MARK: - Hashable
@@ -57,3 +56,18 @@ public final class DisposalToken: Hashable, Comparable {
         return identifier.hashValue
     }
 }
+
+public final class BlockDisposalToken: DisposalToken {
+    
+    public let action: () -> Void
+
+    public init(action: @escaping () -> Void) {
+        self.action = action
+    }
+    
+    public override func disposalAction() {
+        action()
+    }
+
+}
+

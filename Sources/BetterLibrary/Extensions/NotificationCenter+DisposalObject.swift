@@ -30,7 +30,7 @@ extension NotificationCenter {
                               object: object,
                               queue: queue,
                               using: method)
-        return DisposalToken(
+        return BlockDisposalToken(
             action: Invocation.WeakAction(
                 target: self,
                 param: obj,
