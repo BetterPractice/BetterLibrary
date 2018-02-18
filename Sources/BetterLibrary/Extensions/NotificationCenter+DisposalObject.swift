@@ -20,6 +20,8 @@
 
 import Foundation
 
+#if os(iOS) || os(macOS)
+
 extension NotificationCenter {
     
     public func addObserver(forName name: NSNotification.Name?,
@@ -37,3 +39,5 @@ extension NotificationCenter {
                 method: NotificationCenter.removeObserver))
     }
 }
+    
+#endif
