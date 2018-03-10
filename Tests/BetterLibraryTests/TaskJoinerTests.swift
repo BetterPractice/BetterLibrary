@@ -24,68 +24,80 @@ import Dispatch
 
 public class TaskJoinerTests: XCTestCase {
     
+    let workQueue: OperationQueue = {
+        let q = OperationQueue()
+        q.maxConcurrentOperationCount = 50
+        return q
+    }()
+    
+    func createStallTask<ResultType>(delay: useconds_t, result: ResultType) -> AsyncTask<ResultType> {
+        return AsyncTask.createTask(workQueue: workQueue) { () -> ResultType in
+            usleep(delay)
+            return result
+        }
+    }
+    
+    
     func testSyncWait() {
         
-        self.measure {
-            let joiner: TaskJoiner<Int, Int> = TaskJoiner()
-            let iterations = 100000
+        let joiner: TaskJoiner<Int, Int> = TaskJoiner()
+        let iterations = 10000
+        let multiplier = 9
+        
+        for i in 0..<iterations {
+            let task = self.createStallTask(delay: 1000, result: i * multiplier)
+            joiner.track(identifier: i, task: task)
+        }
+        joiner.markReady()
+        
+        do {
+            let table = try joiner.wait()
+            XCTAssert(table.count==iterations, "Wrong number of rows in result table.")
             
-            for i in 0..<iterations {
-                joiner.markStart(identifier: i)
+            for (aKey, aValue) in table {
+                let aResult = try aValue.value()
+                XCTAssert(aKey * multiplier == aResult, "Result mismatch.")
             }
-            
-            DispatchQueue.concurrentPerform(iterations: iterations) { (i) in
-                joiner.markCompletion(identifier: i, result: MethodResult(i))
-            }
-            do {
-                let table = try joiner.wait()
-                XCTAssert(table.count==iterations, "Wrong number of rows in result table.")
-            }
-            catch {
-                XCTFail("Task unexpectedly threw an error: \(error)")
-            }
+        }
+        catch {
+            XCTFail("Task unexpectedly threw an error: \(error)")
         }
     }
     
     func testAsyncWait() {
         
-        self.measure {
-            let joiner: TaskJoiner<Int, Int> = TaskJoiner()
-            let iterations = 100000
-            
-            for i in 0..<iterations {
-                joiner.markStart(identifier: i)
-            }
-            
-            DispatchQueue.concurrentPerform(iterations: iterations) { (i) in
-                joiner.markCompletion(identifier: i, result: MethodResult(i))
-            }
-            
-            let expectation = self.expectation(description: "Completion called once all tasks complete.")
-            
-            joiner.asyncWait { (result) in
-                do {
-                    let table = try result.value()
-                    XCTAssert(table.count==iterations, "Wrong number of rows in result table.")
-                    expectation.fulfill()
-                }
-                catch {
-                    XCTFail("Task unexpectedly threw an error: \(error)")
-                }
-            }
-            
-            self.waitForExpectations(timeout: 2.0) { (error) in
-                if let error = error {
-                    print("Unexpected error: \(error)")
-                }
-            }
-            
+        let joiner: TaskJoiner<Int, Int> = TaskJoiner()
+        let iterations = 10000
+        let multiplier = 9
+        
+        for i in 0..<iterations {
+            let task = self.createStallTask(delay: 1000, result: i * multiplier)
+            joiner.track(identifier: i, task: task)
+        }
+        
+        joiner.markReady()
+        
+        let expectation = self.expectation(description: "Completion called once all tasks complete.")
+        
+        _ = joiner.asyncWait { (result) in
             do {
-                let table = try joiner.wait()
+                let table = try result.value()
                 XCTAssert(table.count==iterations, "Wrong number of rows in result table.")
+                
+                for (aKey, aValue) in table {
+                    let aResult = try aValue.value()
+                    XCTAssert(aKey * multiplier == aResult, "Result mismatch.")
+                }
+                expectation.fulfill()
             }
             catch {
                 XCTFail("Task unexpectedly threw an error: \(error)")
+            }
+        }
+        
+        self.waitForExpectations(timeout: 5.0) { (error) in
+            if let error = error {
+                print("Unexpected error: \(error)")
             }
         }
     }

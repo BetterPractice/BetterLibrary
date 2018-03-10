@@ -1,5 +1,5 @@
 //
-//  ServiceManager.swift
+//  NetworkParseService.swift
 //  BetterLibrary NetworkServices
 //
 //  Created by Holly Schilling on 3/8/17.
@@ -20,19 +20,14 @@
 
 import Foundation
 
-open class ServiceManager {
+open class NetworkParseService {
     
-    public enum ServiceError: Error {
-        case missingData
-        case missingResponse
-    }
-    
-    public let session: URLSession
+    public let provider: NetworkDataProvider
     public let workQueue: OperationQueue = OperationQueue()
     
     
-    public init(session: URLSession = URLSession.shared) {
-        self.session = session
+    public init(provider: NetworkDataProvider = URLSession.shared) {
+        self.provider = provider
     }
     
     open func fetchAndParse<ParserType: Parser>(url: URL, parser: ParserType) -> AsyncTask<ParserType.OutputType> where ParserType.InputType == (Data, URLResponse) {
@@ -42,39 +37,20 @@ open class ServiceManager {
     
     open func fetchAndParse<ParserType: Parser>(request: URLRequest, parser: ParserType) -> AsyncTask<ParserType.OutputType> where ParserType.InputType == (Data, URLResponse) {
         
-        let asyncTask: AsyncTask<ParserType.OutputType> = AsyncTask()
+        let networkTask = provider.fetchData(for: request)
         
-        let networkTask = session.dataTask(with: request) { (data, response, networkError) in
-            if let networkError = networkError {
-                asyncTask.setError(networkError)
-                return
+        let parseTask = networkTask.continueTask(queue: workQueue) { (data) -> ParserType.OutputType in
+            guard let response = networkTask.response else {
+                throw NetworkDataError.missingResponse
             }
-            guard let data = data else {
-                asyncTask.setError(ServiceError.missingData)
-                return
+            guard parser.canParse((data, response)) else {
+                throw ParserError.parserDeclined
             }
-            guard let response = response else {
-                asyncTask.setError(ServiceError.missingResponse)
-                return
-            }
-            
-            self.workQueue.addOperation {
-                guard parser.canParse((data, response)) else {
-                    asyncTask.setError(ParserError.parserDeclined)
-                    return
-                }
-                do {
-                    let result = try parser.parse((data, response))
-                    asyncTask.setResult(result)
-                }
-                catch {
-                    asyncTask.setError(error)
-                }
-            }
+            let result = try parser.parse((data, response))
+            return result
         }
         
-        networkTask.resume()
-        return asyncTask
+        return parseTask
     }
 
     //MARK: - Data Parsing Methods

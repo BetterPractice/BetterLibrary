@@ -1,6 +1,6 @@
 //
 //  MethodResult.swift
-//  BetterLibrary Async
+//  BetterLibrary
 //
 //  Created by Holly Schilling on 1/21/17.
 //
@@ -24,6 +24,16 @@ public enum MethodResult<T> {
     case success(T)
     case error(Error)
     
+    public static func from(_ block: () throws -> T) -> MethodResult<T> {
+        do {
+            let result = try block()
+            return .success(result)
+        }
+        catch {
+            return .error(error)
+        }
+    }
+    
     public init(_ value: T) {
         self = .success(value)
     }
@@ -42,37 +52,33 @@ public enum MethodResult<T> {
     }
     
     public var result: T? {
-        switch self {
-        case .success(let value):
+        if case .success(let value) = self {
             return value
-        default:
+        } else {
             return nil
         }
     }
     
     public var error: Error? {
-        switch self {
-        case .error(let e):
+        if case .error(let e) = self {
             return e
-        default:
+        } else {
             return nil
         }
     }
     
     public var isSuccessful: Bool {
-        switch self {
-        case .success(_):
+        if case .success(_) = self {
             return true
-        default:
+        } else {
             return false
         }
     }
     
     public var isError: Bool {
-        switch self {
-        case .error(_):
+        if case .error(_) = self {
             return true
-        default:
+        } else {
             return false
         }
     }
