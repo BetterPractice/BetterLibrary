@@ -42,8 +42,8 @@ public class AsyncTaskTests: XCTestCase {
             }
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + minimumWait) { 
-            task.setMethodResult(MethodResult())
+        DispatchQueue.main.asyncAfter(deadline: .now() + minimumWait) {
+            task.setMethodResult(MethodResult(()))
         }
         
         waitForExpectations(timeout: minimumWait+1) { (error) in
