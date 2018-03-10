@@ -18,45 +18,33 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-public struct Invocation {
+public class Invocation<TParam>: UniqueObject
+{
+    private var block: (TParam) -> Void
     
-    // Prevent initialization
-    fileprivate init() { }
-    
-    static func UnownedMethod<TargetType: AnyObject, ParamType, ReturnType>(
-        target: TargetType,
-        method: @escaping (TargetType) -> (ParamType) -> ReturnType)
-        -> (ParamType) -> ReturnType {
-            return { [unowned target] (param: ParamType) in
-                return method(target)(param)
-            }
+    public func invoke(_ param: TParam)
+    {
+        block(param);
     }
     
-    static func WeakMethod<TargetType: AnyObject, ParamType>(
-        target: TargetType,
-        method: @escaping (TargetType) -> (ParamType) -> Void)
-        -> (ParamType) -> Void {
-            return { [weak target] (param: ParamType) in
-                guard let target = target else {
-                    return
-                }
-                return method(target)(param)
-            }
+    public init(_ lambda: @escaping (TParam) -> Void)
+    {
+        block = lambda
     }
     
-    
-    
-    static func WeakAction<TargetType: AnyObject, ParamType>(
-        target: TargetType,
-        param: ParamType,
-        method: @escaping (TargetType) -> (ParamType) -> Void)
-        -> () -> Void {
-            return { [weak target] in
-                guard let target = target else {
-                    return
-                }
-                return method(target)(param)
-            }
+    public convenience init<T: AnyObject>(weakObject: T, method: @escaping (T) -> (TParam) -> Void)
+    {
+        let block = Invocation.CreateLambda(from: weakObject, method: method)
+        self.init(block)
     }
     
+    public class func CreateLambda<T: AnyObject>(from weakObject: T, method: @escaping (T) -> (TParam) -> Void) -> (TParam) -> Void
+    {
+        return { [weak weakObject] (param) in
+            guard let obj = weakObject else {
+                return
+            }
+            method(obj)(param)
+        }
+    }
 }

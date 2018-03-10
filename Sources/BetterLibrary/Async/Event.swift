@@ -3,7 +3,6 @@
 //  BetterLibrary
 //
 //  Created by Holly Schilling on 4/13/17.
-//
 //  Copyright 2017 Better Practice Solutions
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,29 +19,33 @@
 
 import Foundation
 
-open class Event<ParamType> {
+public class Event<TParam>
+{
+    private var invocations: Set<Invocation<TParam>> = []
     
-    private var registered: [(String, (ParamType) -> Void)] = []
-    
-    open func add(action: @escaping (ParamType) -> Void) -> DisposalToken {
-        let identifier = UUID().uuidString
-        registered.append((identifier, action))
-        
-        let token = BlockDisposalToken(
-            action: Invocation.WeakAction(
-                target: self,
-                param: identifier,
-                method: Event.remove))
-        return token
+    @discardableResult
+    public func register(handler: @escaping (TParam) -> Void) -> Invocation<TParam>
+    {
+        let invocation = Invocation(handler)
+        register(invocation: invocation)
+        return invocation
     }
     
-    private func remove(by token: String) {
-        registered = registered.filter { $0.0 != token }
+    public func register(invocation: Invocation<TParam>)
+    {
+        invocations.insert(invocation)
     }
     
-    open func trigger(_ param: ParamType) {
-        for (_, anAction) in registered {
-            anAction(param)
+    @discardableResult
+    public func remove(invocation: Invocation<TParam>) -> Bool
+    {
+        return invocations.remove(invocation) != nil
+    }
+    
+    public func invoke(param: TParam)
+    {
+        for anInvocation in invocations {
+            anInvocation.invoke(param);
         }
     }
 }
