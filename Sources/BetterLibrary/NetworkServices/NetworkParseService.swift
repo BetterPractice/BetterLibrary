@@ -43,10 +43,10 @@ open class NetworkParseService {
             guard let response = networkTask.response else {
                 throw NetworkDataError.missingResponse
             }
-            guard parser.canParse(data, response) else {
+            guard parser.canParse((data, response)) else {
                 throw ParserError.parserDeclined
             }
-            let result = try parser.parse(data, response)
+            let result = try parser.parse((data, response))
             return result
         }
         
